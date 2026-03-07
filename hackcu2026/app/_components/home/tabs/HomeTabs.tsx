@@ -8,15 +8,82 @@ export default function HomeTabs() {
     const [text, setText] = useState("");
     const [file, setFile] = useState<File | null>(null);
 
+    //state for tracking API call status and results
+    const [loading, setLoading] = useState(false);
+    const [result, setResult] = useState<any>(null);
+    const [error, setError] = useState<string | null>(null);
+
     //handlers for each input type; TODO: call actual API 
-    const handleUrlSubmit = () =>{
-        console.log("Analyzing URL:", url);
+    const handleUrlSubmit = async () =>{
+        console.log('Analyzing URL:', url);
+        if (!url.trim()) return; //prevent empty submissions
+
+        setLoading(true);
+        setError(null);
+        try{
+            //POST JSON with url field to analyze endpoint
+            const response = await fetch('/api/analyze',{
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({url})
+            });
+
+            if(!response.ok) throw new Error('Analysis failed');
+
+            //parse and store the analysis result
+            const data = await response.json();
+            setResult(data);
+        } catch (err){
+            setError(err instanceof Error ? err.message : 'Oopsy Daisy');
+        } finally {
+            setLoading(false);
+        }
     };
-    const handleTextSubmit = () =>{
+    const handleTextSubmit = async () =>{
         console.log("Analyzing Text:", text);
+        if(!text.trim()) return; //prevent empty submissions
+
+        setLoading(true);
+        setError(null);
+        try{
+            const response = await fetch('/api/analyze',{
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({text})
+            });
+
+            if(!response.ok) throw new Error('Analysis failed');
+            
+            const data = await response.json();
+        }catch(err){
+            setError(err instanceof Error ? err.message : 'Unknown Error')
+        }finally {
+            setLoading(false);
+        }
     };
-    const handleFileSubmit = () =>{
+
+    const handleFileSubmit = async () =>{
         console.log("Analyzing File:", file);
+        if(!text.trim()) return;
+
+        setLoading(true);
+        setError(null);
+        try{
+            const response = await fetch('api/analyze',{
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({text})
+            });
+
+            if (!response.ok) throw new Error('Analysis failed');
+
+            const data = await response.json();
+            setResult(data);
+        }catch(err){
+            setError(err instanceof Error ? err.message : 'Unknown Error');
+        }finally{
+            setLoading(false);
+        }
     };
     
     return (
