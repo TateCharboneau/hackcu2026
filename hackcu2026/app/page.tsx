@@ -14,7 +14,7 @@ export default function Home() {
         <>
             <Container size="md">
                 <Stack>
-                    {session?.user && <Title order={3}>Welcome Back,  {session.user.name}</Title>}
+                    {session?.user && <Title order={3}>Welcome Back, {session.user.name}</Title>}
                     <Card>
                         <Text>
                             In a world of of rugpulls and pump-and-dumps, TradeTruth stands for transparency. Our tool
