@@ -2,10 +2,8 @@
 import { useState, useCallback } from "react";
 import type { AnalyzeResponse, SimulateResponse, ParsedTrade } from "@/types/trade";
 
-/* ── Generic POST hook ───────────────────────────────────────
-   Returns { trigger, data, isLoading, error }
-   Call trigger(body) manually — nothing fires until you call it.
-────────────────────────────────────────────────────────────── */
+/** Hook to make post requests to api routes*/
+
 function usePost<TBody, TResponse>(url: string) {
   const [data, setData] = useState<TResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -47,17 +45,7 @@ function usePost<TBody, TResponse>(url: string) {
   return { trigger, data, isLoading, error };
 }
 
-/* ── Domain hooks ────────────────────────────────────────────
-   These are what components actually import and use.
-────────────────────────────────────────────────────────────── */
-
-/** Parse + flag raw text or a video URL.
- *
- * Usage:
- *   const { trigger, data, isLoading, error } = useAnalyze();
- *   // call on form submit:
- *   const result = await trigger({ text: "Put 10k in TSLA calls" });
- */
+/** Parse + flag raw text or a video URL. */
 export function useAnalyze() {
   return usePost<
     { text?: string; url?: string },
@@ -65,13 +53,8 @@ export function useAnalyze() {
   >("/api/analyze");
 }
 
-/** Run a Monte Carlo simulation on a parsed trade.
- *
- * Usage:
- *   const { trigger, data, isLoading, error } = useSimulate();
- *   // call after analyze succeeds:
- *   const result = await trigger({ parsedTrade });
- */
+/** Run a Monte Carlo simulation on a parsed trade. */
+
 export function useSimulate() {
   return usePost<
     { parsedTrade: ParsedTrade; numSims?: number },
