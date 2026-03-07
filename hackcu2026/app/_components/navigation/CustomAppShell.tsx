@@ -1,7 +1,7 @@
 "use client";
 import {
     ActionIcon,
-    AppShell,
+    AppShell, Avatar,
     Box,
     Burger,
     Button,
@@ -18,6 +18,8 @@ import styles from "./header.module.css";
 import Image from "next/image";
 import {bitcount, orbitron} from "@/app/fonts";
 import {IconMoon, IconSun} from "@tabler/icons-react";
+import LoginButton from "@/app/_components/auth/loginButton/LoginButton";
+import {useSession} from "next-auth/react";
 
 interface Props {
     children: React.ReactNode;
@@ -28,12 +30,17 @@ export default function CustomAppShell(props: Props) {
 
     const [opened, {toggle}] = useDisclosure();
 
+    const {data: session, update, status} = useSession();
+
+    console.log(session);
+
+
     const pathname = usePathname();
     const splitPath: string[] = pathname ? pathname.split("/") : ["/"];
     const [active, setActive] = useState(pathname ? pathname == "/" ? "/" : splitPath[splitPath.length - 1] : "/");
 
-    const { toggleColorScheme, setColorScheme } = useMantineColorScheme();
-    const computedColorScheme = useComputedColorScheme('light', { getInitialValueInEffect: true });
+    const {toggleColorScheme, setColorScheme} = useMantineColorScheme();
+    const computedColorScheme = useComputedColorScheme('light', {getInitialValueInEffect: true});
 
     const navLinks = [
         // {label: 'About Us', href: '/about'},
@@ -88,20 +95,26 @@ export default function CustomAppShell(props: Props) {
                         />
                     </Group>
 
-                    <ActionIcon
-                        ml={"auto"}
-                        onClick={() => setColorScheme(computedColorScheme === 'light' ? 'dark' : 'light')}
-                        variant="default"
-                        size="xl"
-                        aria-label="Toggle color scheme"
-                    >
-                        <Box lightHidden>
-                            <IconSun stroke={1.5}/>
-                        </Box>
-                        <Box darkHidden>
-                            <IconMoon stroke={1.5}/>
-                        </Box>
-                    </ActionIcon>
+                    <Group ml={"auto"}>
+                        {!session?.user && <LoginButton/>}
+                        {session?.user && <>
+                            <Avatar src={session.user.image}/>
+                        </>}
+                        <ActionIcon
+                            onClick={() => setColorScheme(computedColorScheme === 'light' ? 'dark' : 'light')}
+                            variant="default"
+                            size="xl"
+                            aria-label="Toggle color scheme"
+                        >
+                            <Box lightHidden>
+                                <IconSun stroke={1.5}/>
+                            </Box>
+                            <Box darkHidden>
+                                <IconMoon stroke={1.5}/>
+                            </Box>
+                        </ActionIcon>
+                    </Group>
+
                 </Group>
             </AppShell.Header>
 
