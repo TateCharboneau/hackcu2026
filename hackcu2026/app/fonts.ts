@@ -9,8 +9,7 @@ export const orbitron = Orbitron({
 
 export const bitcount = Bitcount({
     subsets: ['latin'],
-    weight: '600',
-    display: 'swap',
+    weight: '300',
 })
 
 export const roboto = Roboto({

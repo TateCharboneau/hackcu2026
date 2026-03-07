@@ -1,5 +1,15 @@
 "use client";
-import {AppShell, Box, Burger, Button, Group, NativeSelect, Title} from "@mantine/core";
+import {
+    ActionIcon,
+    AppShell,
+    Box,
+    Burger,
+    Button,
+    Group,
+    NativeSelect,
+    Title, useComputedColorScheme,
+    useMantineColorScheme
+} from "@mantine/core";
 import {useDisclosure} from "@mantine/hooks";
 import Link from "next/link";
 import {redirect, usePathname} from "next/navigation";
@@ -7,6 +17,7 @@ import {useState} from "react";
 import styles from "./header.module.css";
 import Image from "next/image";
 import {bitcount, orbitron} from "@/app/fonts";
+import {IconMoon, IconSun} from "@tabler/icons-react";
 
 interface Props {
     children: React.ReactNode;
@@ -21,6 +32,9 @@ export default function CustomAppShell(props: Props) {
     const splitPath: string[] = pathname ? pathname.split("/") : ["/"];
     const [active, setActive] = useState(pathname ? pathname == "/" ? "/" : splitPath[splitPath.length - 1] : "/");
 
+    const { toggleColorScheme, setColorScheme } = useMantineColorScheme();
+    const computedColorScheme = useComputedColorScheme('light', { getInitialValueInEffect: true });
+
     const navLinks = [
         // {label: 'About Us', href: '/about'},
         {label: 'Home', href: '/'},
@@ -31,11 +45,11 @@ export default function CustomAppShell(props: Props) {
         <AppShell
             padding="md"
             header={{height: 60}}
-            navbar={{
-                width: 300,
-                breakpoint: 'sm',
-                collapsed: {mobile: !opened},
-            }}
+            // navbar={{
+            //     width: 300,
+            //     breakpoint: 'sm',
+            //     collapsed: {mobile: !opened},
+            // }}
         >
             <AppShell.Header>
                 <Group p={10} h={60} align="center">
@@ -73,6 +87,21 @@ export default function CustomAppShell(props: Props) {
                                       }}
                         />
                     </Group>
+
+                    <ActionIcon
+                        ml={"auto"}
+                        onClick={() => setColorScheme(computedColorScheme === 'light' ? 'dark' : 'light')}
+                        variant="default"
+                        size="xl"
+                        aria-label="Toggle color scheme"
+                    >
+                        <Box lightHidden>
+                            <IconSun stroke={1.5}/>
+                        </Box>
+                        <Box darkHidden>
+                            <IconMoon stroke={1.5}/>
+                        </Box>
+                    </ActionIcon>
                 </Group>
             </AppShell.Header>
 

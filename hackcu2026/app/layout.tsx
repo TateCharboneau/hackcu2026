@@ -7,7 +7,7 @@ import CustomAppShell from "@/app/_components/navigation/CustomAppShell";
 import {ColorSchemeScript, MantineProvider, mantineHtmlProps, createTheme} from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import {LazyMotion, domAnimation} from "motion/react"
-import {orbitron} from "@/app/fonts";
+import {orbitron, roboto} from "@/app/fonts";
 
 
 export const metadata: Metadata = {
@@ -33,7 +33,7 @@ export default function RootLayout({
 
 
     return (
-        <html lang="en" {...mantineHtmlProps} className={orbitron.className}>
+        <html lang="en" {...mantineHtmlProps} className={roboto.className}>
         <head>
             <ColorSchemeScript defaultColorScheme={defaultScheme}/>
             <title>
