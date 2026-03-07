@@ -1,1 +1,4 @@
 # HackCU2026
+Today’s financial landscape is increasingly defined by a struggle between honest investors and those who use their authority to manipulate markets for personal gain. TradeTruth is an AI-powered platform designed to help users critically evaluate financial advice before accepting it as credible. By simply providing a link to a video or post recommending a purchase, our system analyzes the content and assesses whether the advice can reasonably be considered sound.
+
+TradeTruth was created to serve as an additional layer of protection against malicious traders, bad-faith influencers, and crypto actors who attempt to profit at the expense of unsuspecting individuals. Our goal is to empower citizens with greater clarity, caution, and confidence when navigating an increasingly noisy and deceptive financial landscape.
