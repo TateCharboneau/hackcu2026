@@ -1,0 +1,73 @@
+.grid {
+
+    margin: auto;
+    width: 100%;
+    height: 100%;
+    padding-left: 5px;
+
+}
+
+.logo {
+}
+
+
+.navbarBurger {
+
+}
+
+.link {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    font-size: var(--mantine-font-size-sm);
+    color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-1));
+    padding: var(--mantine-spacing-xs) var(--mantine-spacing-sm);
+    border-radius: var(--mantine-radius-sm);
+    font-weight: 500;
+
+
+}
+
+.homeLink {
+    display: flex;
+    align-items: center;
+    margin-left: var(--mantine-spacing-sm);
+}
+
+.accountButtonsCol {
+
+    display: flex;
+    align-items: center;
+    justify-content: right;
+
+}
+
+.accountButtonsGroup {
+    margin-right: var(--mantine-spacing-lg);
+    height: 42px;
+
+}
+
+
+.newNav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 60px; /* Adjust as needed */
+
+}
+.logoText {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+
+.dropdownNavigation{
+    /*color: white;*/
+
+}
+
+.dropdownNavigationWrapper {
+    outline: 1px solid ;
+    border-radius: var(--mantine-radius-sm);
+}
