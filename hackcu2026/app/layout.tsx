@@ -3,7 +3,7 @@ import '@mantine/notifications/styles.css';
 import '@mantine/charts/styles.css';
 import "./globals.css"
 import type {Metadata} from "next";
-import CustomAppShell from "@/app/_components/Navigation/CustomAppShell";
+import CustomAppShell from "@/app/_components/navigation/CustomAppShell";
 import {ColorSchemeScript, MantineProvider, mantineHtmlProps, createTheme} from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import {LazyMotion, domAnimation} from "motion/react"
@@ -16,7 +16,10 @@ export const metadata: Metadata = {
 };
 
 const theme = createTheme({
-
+    headings: {
+        fontFamily: orbitron.style.fontFamily,
+        fontWeight: "900",
+    },
 });
 
 export default function RootLayout({

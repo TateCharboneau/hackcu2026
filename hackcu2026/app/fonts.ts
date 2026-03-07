@@ -1,13 +1,13 @@
-import {Cantata_One, Playfair_Display, Orbitron, Roboto} from 'next/font/google'
+import {Bitcount, Orbitron, Roboto} from 'next/font/google'
 
-export const canta_one = Cantata_One({
-    weight: '400',
-    subsets: ['latin'],
-})
-export const playfair_display = Playfair_Display({
-    subsets: ['latin'],
-})
+
 export const orbitron = Orbitron({
+    subsets: ['latin'],
+    weight: '600',
+    display: 'swap',
+})
+
+export const bitcount = Bitcount({
     subsets: ['latin'],
     weight: '600',
     display: 'swap',

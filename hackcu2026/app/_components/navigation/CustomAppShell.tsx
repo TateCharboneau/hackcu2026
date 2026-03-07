@@ -1,11 +1,12 @@
 "use client";
-import {AppShell, Box, Burger, Button, Group, NativeSelect} from "@mantine/core";
+import {AppShell, Box, Burger, Button, Group, NativeSelect, Title} from "@mantine/core";
 import {useDisclosure} from "@mantine/hooks";
 import Link from "next/link";
 import {redirect, usePathname} from "next/navigation";
 import {useState} from "react";
 import styles from "./header.module.css";
 import Image from "next/image";
+import {bitcount, orbitron} from "@/app/fonts";
 
 interface Props {
     children: React.ReactNode;
@@ -37,7 +38,7 @@ export default function CustomAppShell(props: Props) {
             }}
         >
             <AppShell.Header>
-                <Group p={10} h={60} justify={"center"} align="center">
+                <Group p={10} h={60} align="center">
                     {/*<Burger*/}
                     {/*    className={styles.navbarBurger}*/}
                     {/*    opened={opened}*/}
@@ -45,6 +46,7 @@ export default function CustomAppShell(props: Props) {
                     {/*    hiddenFrom="sm"*/}
                     {/*    size="sm"*/}
                     {/*/>*/}
+                    <Title className={bitcount.className} order={1} mr={10}>TradeTruth</Title>
 
                     <Group className={styles.accountButtonsGroup} visibleFrom="md">
                         {navLinks.map((link) =>
