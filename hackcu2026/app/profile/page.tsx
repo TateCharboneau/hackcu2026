@@ -1,6 +1,6 @@
 "use client";
 
-import { Container, Title, Paper, Stack, Group, Avatar, Text, Divider } from "@mantine/core";
+import {Container, Title, Paper, Stack, Group, Avatar, Text, Divider, Card} from "@mantine/core";
 import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
 import { IconUser, IconMail, IconCalendar } from "@tabler/icons-react";
@@ -22,7 +22,7 @@ export default function ProfilePage() {
         <Container size="md" py="xl">
             <Stack gap="lg">
                 {/* Profile Header */}
-                <Paper shadow="sm" p="xl" radius="md">
+                <Card shadow="sm" p="xl" radius="md">
                     <Group gap="lg">
                         <Avatar
                             src={session.user.image}
@@ -37,10 +37,10 @@ export default function ProfilePage() {
                             </Group>
                         </Stack>
                     </Group>
-                </Paper>
+                </Card>
 
                 {/* Account Information */}
-                <Paper shadow="sm" p="xl" radius="md">
+                <Card shadow="sm" p="xl" radius="md">
                     <Title order={3} mb="md">Account Information</Title>
                     <Stack gap="md">
                         <Group justify="apart">
@@ -59,7 +59,7 @@ export default function ProfilePage() {
                             <Text>{session.user.email}</Text>
                         </Group>
                     </Stack>
-                </Paper>
+                </Card>
 
 
             </Stack>
