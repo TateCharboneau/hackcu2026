@@ -1,7 +1,7 @@
 "use client";
 
 import {BarChart, DonutChart, LineChart} from "@mantine/charts";
-import {Badge, Box, Grid, GridCol, Group, Paper, Stack, Text, Title} from "@mantine/core";
+import {Badge, Box, Flex, Grid, GridCol, Group, Paper, Stack, Text, Title} from "@mantine/core";
 import {useElementSize} from "@mantine/hooks";
 import {useMemo} from "react";
 import {SimulationResult} from "@/types/trade";
@@ -15,7 +15,8 @@ const fmt = (v: number) =>
     new Intl.NumberFormat("en-US", {
         style: "currency",
         currency: "USD",
-        maximumFractionDigits: 0,
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
     }).format(v);
 
 const pct = (v: number) => `${(v * 100).toFixed(1)}%`;
@@ -37,10 +38,14 @@ export default function SimulationVisualization({data}: Props) {
             const idx = Math.min(Math.floor(v / bucketSize), BUCKETS - 1);
             counts[idx]++;
         });
-        return counts.map((count, i) => ({
-            range: fmt(i * bucketSize),
-            count,
-        }));
+        return [
+            {bucket: 0, range: fmt(0), count: 0},
+            ...counts.map((count, i) => ({
+                range: fmt(i * bucketSize),
+                bucket: i * bucketSize,
+                count,
+            }))
+        ];
     }, [endingValues]);
 
     const pathsChartData = useMemo(() => {
@@ -93,9 +98,14 @@ export default function SimulationVisualization({data}: Props) {
                     </Text>
                     <Title order={2} mt={2}>Simulation Results</Title>
                 </Box>
-                <Badge size="md" variant="light" color="gray">
-                    n = {endingValues.length.toLocaleString()} simulations
-                </Badge>
+                <Stack>
+                    <Badge size="md" variant="light" color="gray">
+                        Initial Investment of $1000
+                    </Badge>
+                    <Badge size="md" variant="light" color="gray">
+                        n = {endingValues.length.toLocaleString()} simulations
+                    </Badge>
+                </Stack>
             </Group>
 
             {/* KPI Row */}
@@ -127,15 +137,23 @@ export default function SimulationVisualization({data}: Props) {
                     <BarChart
                         h={300}
                         data={histogram}
-                        dataKey="range"
+                        dataKey="bucket"
                         series={[{name: "count", color: "violet.5", label: "Simulations"}]}
-                        tickLine="none"
                         gridAxis="y"
                         withTooltip
                         tooltipAnimationDuration={150}
                         valueFormatter={(v) => `${v} runs`}
-                        xAxisProps={{tick: false}}
                         yAxisProps={{width: 50}}
+                        xAxisProps={{
+                            tickLine: false,
+                            axisLine: false,
+                            tickFormatter: (v) => fmt(v),
+                            interval: 2,
+                        }}
+                        tooltipProps={{
+                            formatter: (value) => [`${value} runs`, "Simulations"],
+                            labelFormatter: (v) => fmt(v),
+                        }}
                     />
                 </Box>
             </Box>
@@ -148,8 +166,9 @@ export default function SimulationVisualization({data}: Props) {
                 <Text size="xs" c="dimmed" mb="md">
                     Profitable vs unprofitable simulation runs
                 </Text>
-                <Grid justify="center" align="center" gutter="xl">
+                <Grid justify="center" align="center">
                     <GridCol span={{base: 12, md: 6}}>
+                        <Flex justify="center" align="center" mt={4}>
                             <DonutChart
                                 size={180}
                                 thickness={26}
@@ -161,6 +180,7 @@ export default function SimulationVisualization({data}: Props) {
                                     {value: lossRate * 100, color: "red.5", name: "Loss"},
                                 ]}
                             />
+                        </Flex>
                     </GridCol>
                     <GridCol span={{base: 12, md: 6}}>
                         <Stack gap="sm">
@@ -245,6 +265,10 @@ export default function SimulationVisualization({data}: Props) {
                 </Stack>
                 <Paper mt="xl" p="md" withBorder style={{background: "var(--mantine-color-gray-0)"}}>
                     <Text size="sm" fw={600} mb={4}>IQR (P25 → P75)</Text>
+                    <Text size="xs" c="dimmed" mb={8}>
+                        The interquartile range (IQR) spans the middle 50% of all simulation outcomes —
+                        half of all runs landed between these two values.
+                    </Text>
                     <Text size="sm" c="dimmed">{fmt(summary.p25)} → {fmt(summary.p75)}</Text>
                     <Text size="xs" c="dimmed" mt={4}>Range: {fmt(summary.p75 - summary.p25)}</Text>
                 </Paper>
