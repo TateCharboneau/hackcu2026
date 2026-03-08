@@ -109,7 +109,7 @@ export default function HomeTabs() {
                         <Stack>
                             <TextInput
                                 label="Content URL"
-                                description="Link to a Youtube video."
+                                description="Link to a Youtube, Twitch, Instagram, or Tiktok clip containing financial advice"
                                 placeholder="https://youtube.com/watch?v=..."
                                 value={url}
                                 onChange={(e) => setUrl(e.currentTarget.value)}
