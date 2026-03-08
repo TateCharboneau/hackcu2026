@@ -22,6 +22,7 @@ import LoginButton from "@/app/_components/auth/loginButton/LoginButton";
 import {signOut, useSession} from "next-auth/react";
 import {notifications} from "@mantine/notifications";
 import LoadingOverlay from "@/app/_components/home/loading/LoadingOverlay";
+import Footer from "../footer/Footer";
 
 interface Props {
     children: React.ReactNode;
@@ -158,7 +159,9 @@ export default function CustomAppShell(props: Props) {
 
             <AppShell.Main>
                 {children}
+                <Footer/>
             </AppShell.Main>
+            
         </AppShell>
     </>);
 
