@@ -64,7 +64,7 @@ const techStack = [
     "TypeScript",
     "Mantine UI",
     "Next-Auth",
-    "MongoDB & Mongoose",
+    "MongoDB, Mongoose & MongoDB Atlas",
     "AI/ML Analysis",
     "Web Scraping & Transcription"
 ];
