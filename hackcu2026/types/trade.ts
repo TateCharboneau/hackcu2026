@@ -59,20 +59,25 @@ export interface SimulationResult {
 
 /** Shape of the /api/analyze response. */
 export interface AnalyzeResponse {
+  /** false when the input text is not financial advice */
+  isFinancial: boolean;
+  /** MongoDB document ID — only present when isFinancial is true */
+  id?: string;
   rawText: string;
-  parsedTrade: ParsedTrade;
+  parsedTrade?: ParsedTrade;
   flags: Flag[];
   explanation: string;
 }
 
 /** Shape of the /api/simulate request body. */
 export interface SimulateRequest {
-  parsedTrade: ParsedTrade;
+  /** The Analysis document ID returned by /api/analyze */
+  id: string;
 }
 
 /** Shape of the /api/simulate response. */
 export interface SimulateResponse {
-  simulation: SimulationResult;
+  id: string;
 }
 
 /** Full analysis document stored in MongoDB. */

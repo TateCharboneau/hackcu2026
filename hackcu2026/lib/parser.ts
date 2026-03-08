@@ -14,7 +14,10 @@ const MODEL = "gpt-4o-mini";
 
 const SYSTEM_PROMPT = `You are a financial trade parser. The user will give you a piece of investing advice or a trade idea in casual language.
 
-Your job is to extract structured trade information and return ONLY valid JSON matching this exact schema — no markdown, no explanation, no wrapping:
+IMPORTANT: If the text does NOT contain any financial advice, trade idea, stock pick, or investment recommendation, return ONLY this JSON:
+{"notFinancial": true}
+
+Otherwise, extract structured trade information and return ONLY valid JSON matching this exact schema — no markdown, no explanation, no wrapping:
 
 {
   "ticker": string,            // uppercase ticker symbol, e.g. "TSLA" — use your best guess; if unsure use "UNKNOWN"
@@ -45,7 +48,7 @@ Rules:
 - List every assumption you made in the assumptions array
 - Return ONLY the JSON object, nothing else`;
 
-export async function parseTrade(rawText: string): Promise<ParsedTrade> {
+export async function parseTrade(rawText: string): Promise<ParsedTrade | null> {
   const apiKey = process.env.OPENAI_API_KEY;
 
   if (!apiKey) {
@@ -85,8 +88,10 @@ export async function parseTrade(rawText: string): Promise<ParsedTrade> {
     .trim();
 
   try {
-    const parsed: ParsedTrade = JSON.parse(cleaned);
-    return sanitizeParsedTrade(parsed);
+    const parsed = JSON.parse(cleaned);
+    // LLM signals the input isn't financial advice
+    if (parsed.notFinancial) return null;
+    return sanitizeParsedTrade(parsed as Partial<ParsedTrade>);
   } catch {
     console.error("[parser] Failed to parse LLM JSON:", cleaned);
     throw new Error("LLM returned invalid JSON");

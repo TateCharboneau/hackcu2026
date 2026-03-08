@@ -2,7 +2,8 @@
 import {Tabs, TextInput, Textarea, Button, Stack, FileInput, Card, Skeleton, Text} from "@mantine/core";
 import {useState} from "react";
 import LoadingOverlay from "@/app/_components/home/loading/LoadingOverlay";
-import {ParsedTrade, SimulateResponse, AnalysisDocument} from "@/types/trade";
+import {AnalysisDocument} from "@/types/trade";
+import {useAnalysis} from "@/lib/swr";
 import SimulationVisualization from "@/app/_components/home/simulation/SimulationVisualization";
 
 export default function HomeTabs() {
@@ -13,119 +14,74 @@ export default function HomeTabs() {
 
     //state for tracking API call status and results
     const [loading, setLoading] = useState(false);
-    const [result, setResult] = useState<SimulateResponse | null>(null);
+    const [resultId, setResultId] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
 
-    // Shared helper: run simulate after a successful analyze response
-    const runSimulate = async (parsedTrade: ParsedTrade) => {
-        const simResponse = await fetch('/api/simulate', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({parsedTrade}),
-        });
-        if (!simResponse.ok) throw new Error('Simulation failed');
-        return simResponse.json();
+    // Fetch the full analysis document once we have an ID
+    const { item: result, isLoading: resultLoading } = useAnalysis(resultId);
+
+    // Shared helper: call analyze then (if financial) simulate, returning the doc ID
+    const analyzeAndSimulate = async (
+        analyzeInit: RequestInit,
+    ): Promise<void> => {
+        setLoading(true);
+        setError(null);
+        setResultId(null);
+        try {
+            // 1. Analyze
+            const analyzeRes = await fetch('/api/analyze', analyzeInit);
+            if (!analyzeRes.ok) throw new Error('Analysis failed');
+            const analyzeData = await analyzeRes.json();
+
+            // 2. Non-financial input → early exit
+            if (!analyzeData.isFinancial) {
+                setError(analyzeData.explanation ?? 'Input does not appear to be financial advice.');
+                return;
+            }
+
+            // 3. Simulate (server loads parsedTrade from DB by ID)
+            const simRes = await fetch('/api/simulate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: analyzeData.id }),
+            });
+            if (!simRes.ok) throw new Error('Simulation failed');
+
+            // 4. Set the ID so useAnalysis fetches the complete document
+            setResultId(analyzeData.id);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Unknown error');
+        } finally {
+            setLoading(false);
+        }
     };
 
-    // Fire-and-forget: persist the analysis to MongoDB for history
-    const saveToHistory = (doc: Omit<AnalysisDocument, 'createdAt' | 'email'>) => {
-        fetch('/api/history', {
+    const handleUrlSubmit = () => {
+        if (!url.trim()) return;
+        return analyzeAndSimulate({
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(doc),
-        }).catch((err) => console.warn('[saveToHistory]', err));
+            body: JSON.stringify({ url }),
+        });
     };
 
-    const handleUrlSubmit = async () => {
-        if (!url.trim()) return;
-        setLoading(true);
-        setError(null);
-        try {
-            const analyzeRes = await fetch('/api/analyze', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({url}),
-            });
-            if (!analyzeRes.ok) throw new Error('Analysis failed');
-            const analyzeData = await analyzeRes.json();
-
-            const simData = await runSimulate(analyzeData.parsedTrade);
-            setResult({...analyzeData, simulation: simData.simulation});
-            saveToHistory({
-                rawText: analyzeData.rawText,
-                parsedTrade: analyzeData.parsedTrade,
-                flags: analyzeData.flags,
-                explanation: analyzeData.explanation,
-                simulationResult: simData.simulation,
-            });
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Unknown error');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleTextSubmit = async () => {
+    const handleTextSubmit = () => {
         if (!text.trim()) return;
-        setLoading(true);
-        setError(null);
-        try {
-            const analyzeRes = await fetch('/api/analyze', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({text}),
-            });
-            if (!analyzeRes.ok) throw new Error('Analysis failed');
-            const analyzeData = await analyzeRes.json();
-
-            const simData = await runSimulate(analyzeData.parsedTrade);
-            console.log(simData);
-            setResult({...analyzeData, simulation: simData.simulation});
-            saveToHistory({
-                rawText: analyzeData.rawText,
-                parsedTrade: analyzeData.parsedTrade,
-                flags: analyzeData.flags,
-                explanation: analyzeData.explanation,
-                simulationResult: simData.simulation,
-            });
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Unknown error');
-        } finally {
-            setLoading(false);
-        }
+        return analyzeAndSimulate({
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text }),
+        });
     };
 
-    const handleFileSubmit = async () => {
+    const handleFileSubmit = () => {
         if (!file) return;
-        setLoading(true);
-        setError(null);
-        try {
-            // File uploads must use multipart/form-data — do NOT set Content-Type manually,
-            // the browser sets it automatically with the correct boundary when using FormData
-            const formData = new FormData();
-            formData.append('audio', file);
-
-            const analyzeRes = await fetch('/api/analyze', {
-                method: 'POST',
-                body: formData,
-            });
-            if (!analyzeRes.ok) throw new Error('Analysis failed');
-            const analyzeData = await analyzeRes.json();
-
-            const simData = await runSimulate(analyzeData.parsedTrade);
-            setResult({...analyzeData, simulation: simData.simulation});
-            saveToHistory({
-                rawText: analyzeData.rawText,
-                parsedTrade: analyzeData.parsedTrade,
-                flags: analyzeData.flags,
-                explanation: analyzeData.explanation,
-                simulationResult: simData.simulation,
-            });
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Unknown error');
-        } finally {
-            setLoading(false);
-        }
+        const formData = new FormData();
+        formData.append('audio', file);
+        return analyzeAndSimulate({
+            method: 'POST',
+            body: formData,
+        });
     };
 
     return (<>
@@ -192,17 +148,17 @@ export default function HomeTabs() {
             </Card>
 
             {/*@ts-expect-error This works, but says you can't do align on Card*/}
-            {loading && <Card style={{minHeight: "400px"}} align={"center"} mt={20}>
+            {(loading || resultLoading) && <Card style={{minHeight: "400px"}} align={"center"} mt={20}>
                 <Skeleton w={"100%"} h={400} />
             </Card>}
 
             {/*@ts-expect-error This works, but says you can't do align on Card*/}
-            {!loading && error && <Card style={{minHeight: "400px"}} align={"center"} mt={20}>
-                <Text c={"red"}>There&#39;s been an unexpected error...</Text>
+            {!loading && !resultLoading && error && <Card style={{minHeight: "400px"}} align={"center"} mt={20}>
+                <Text c={"red"}>{error}</Text>
             </Card>}
 
-            {!loading && result && <Card style={{minHeight: "400px", minWidth: 0}} mt={20}>
-                <SimulationVisualization data={result.simulation}/>
+            {!loading && !resultLoading && result?.simulationResult && <Card style={{minHeight: "400px", minWidth: 0}} mt={20}>
+                <SimulationVisualization data={result.simulationResult}/>
             </Card>}
         </>
     );

@@ -3,7 +3,6 @@ import { useState, useCallback, useEffect } from "react";
 import type {
   AnalyzeResponse,
   SimulateResponse,
-  ParsedTrade,
   AnalysisDocument,
 } from "@/types/trade";
 
@@ -58,20 +57,13 @@ export function useAnalyze() {
   >("/api/analyze");
 }
 
-/** Run a Monte Carlo simulation on a parsed trade. */
+/** Run a Monte Carlo simulation on a previously-analyzed document. */
 
 export function useSimulate() {
   return usePost<
-    { parsedTrade: ParsedTrade; numSims?: number },
+    { id: string; numSims?: number },
     SimulateResponse
   >("/api/simulate");
-}
-
-/** Save a completed analysis to the database. Fire-and-forget. */
-export function useSaveAnalysis() {
-  return usePost<Partial<AnalysisDocument>, { id: string; createdAt: string }>(
-    "/api/history",
-  );
 }
 
 /** Fetch the list of past analyses. Call `refresh()` to re-fetch. */

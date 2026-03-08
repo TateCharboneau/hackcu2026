@@ -6,17 +6,22 @@
  *   { url: string }            — video URL (YouTube Shorts, TikTok, Instagram Reel)
  *   multipart/form-data        — direct audio file upload (field name: "audio")
  *
- * Returns: AnalyzeResponse
+ * Returns: AnalyzeResponse  ({ id, isFinancial, rawText, parsedTrade?, flags, explanation })
  *
  * Pipeline:
  *   0. Resolve rawText from text | url | audio upload
- *   1. Parse free-text → structured ParsedTrade (LLM)
+ *   1. Parse free-text → structured ParsedTrade (LLM)  — returns null if not financial
  *   2. Detect red flags (deterministic)
- *   3. Generate explanation (LLM)
+ *   3. Resolve ticker if needed
  *   4. Backfill currentPrice from market data
+ *   5. Generate explanation (LLM)
+ *   6. Save to MongoDB and return the document ID
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/auth";
+import connectDB from "@/lib/db";
+import Analysis from "@/models/Analysis";
 import { parseTrade, explainTrade } from "@/lib/parser";
 import { detectFlags } from "@/lib/flags";
 import { getCurrentPrice, resolveTickerFromName } from "@/lib/marketData";
@@ -25,11 +30,18 @@ import type { AnalyzeResponse } from "@/types/trade";
 
 export async function POST(req: NextRequest) {
   try {
+    /* ── Auth ─────────────────────────────────────────────── */
+    const session = await auth();
+    const email = session?.user?.email;
+    if (!email) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
+
+    /* ── Resolve rawText ──────────────────────────────────── */
     let rawText = "";
     const contentType = req.headers.get("content-type") ?? "";
 
     if (contentType.includes("multipart/form-data")) {
-      // ── Mode 3: direct audio file upload ──────────────────
       const form = await req.formData();
       const audioFile = form.get("audio");
 
@@ -44,14 +56,11 @@ export async function POST(req: NextRequest) {
       const buffer = Buffer.from(arrayBuffer);
       rawText = await transcribeBuffer(buffer, (audioFile as File).name);
     } else {
-      // ── Mode 1 & 2: JSON body with text or url ─────────────
       const body = await req.json();
 
       if (body?.url) {
-        // Mode 2: video URL → download audio → transcribe
         rawText = await transcribeFromUrl(body.url as string);
       } else if (body?.text) {
-        // Mode 1: plain text (existing behaviour)
         rawText = (body.text as string).trim();
       }
     }
@@ -63,10 +72,22 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 1. LLM parse
+    /* ── 1. LLM parse (returns null if not financial) ───── */
     const parsedTrade = await parseTrade(rawText);
 
-    // 1b. If GPT wasn't confident about the ticker, resolve it via Yahoo search
+    if (!parsedTrade) {
+      // Input is not financial advice — return early, nothing saved
+      const response: AnalyzeResponse = {
+        isFinancial: false,
+        rawText,
+        flags: [],
+        explanation:
+          "The input doesn't appear to contain financial advice or a trade recommendation. Try pasting a stock tip, newsletter excerpt, or investing video URL.",
+      };
+      return NextResponse.json(response);
+    }
+
+    /* ── 2. Ticker resolution ─────────────────────────────── */
     if (parsedTrade.ticker === "UNKNOWN" && parsedTrade.companyName) {
       const resolved = await resolveTickerFromName(parsedTrade.companyName);
       if (resolved) {
@@ -78,7 +99,6 @@ export async function POST(req: NextRequest) {
           `Ticker ${resolved} resolved from company name "${parsedTrade.companyName}" via market data search`,
         );
       } else {
-        // Genuine fallback — couldn't find it anywhere
         parsedTrade.ticker = "SPY";
         parsedTrade.assumptions.push(
           `Could not resolve ticker for "${parsedTrade.companyName}" — defaulted to SPY`,
@@ -86,23 +106,33 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 2. Deterministic red-flag scan
+    /* ── 3. Deterministic red-flag scan ───────────────────── */
     const flags = detectFlags(rawText);
 
-    // 3. Backfill real current price (ticker is now confirmed correct)
+    /* ── 4. Backfill current price ────────────────────────── */
     try {
       parsedTrade.currentPrice = await getCurrentPrice(parsedTrade.ticker);
     } catch {
-      // Non-fatal — simulation will use synthetic data
-      console.warn(
-        `[analyze] Could not fetch price for ${parsedTrade.ticker}`,
-      );
+      console.warn(`[analyze] Could not fetch price for ${parsedTrade.ticker}`);
     }
 
-    // 4. Generate explanation — runs after ticker is fully resolved
+    /* ── 5. Generate explanation ──────────────────────────── */
     const explanation = await explainTrade(rawText, parsedTrade);
 
+    /* ── 6. Persist to MongoDB ────────────────────────────── */
+    await connectDB();
+    const doc = await Analysis.create({
+      email,
+      rawText,
+      parsedTrade,
+      flags,
+      explanation,
+      // simulationResult intentionally omitted — filled by /api/simulate
+    });
+
     const response: AnalyzeResponse = {
+      isFinancial: true,
+      id: doc._id.toString(),
       rawText,
       parsedTrade,
       flags,
