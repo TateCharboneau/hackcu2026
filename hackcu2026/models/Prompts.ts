@@ -33,12 +33,18 @@ const SimulationSummarySchema = new mongoose.Schema({
     maxGain: Number,
 }, { _id: false });
 
+const SimulationResultSchema = new mongoose.Schema({
+    summary: SimulationSummarySchema,
+    endingValues: [Number],
+    samplePaths: [[Number]],
+}, { _id: false });
+
 const PromptsSchema = new mongoose.Schema({
     email: { type: String, required: true },
     rawText: String,
     parsedTrade: ParsedTradeSchema,
     flags: [FlagSchema],
-    simulationSummary: SimulationSummarySchema,
+    simulationResult: SimulationResultSchema,
     createdAt: { type: Date, default: Date.now },
 });
 

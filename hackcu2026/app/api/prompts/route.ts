@@ -28,11 +28,11 @@ export async function GET(req : Request){
     export async function POST(req:Request){
         try{
             const body = await req.json();
-            const { rawText, parsedTrade, flags, simulationSummary, email } = body;
+            const { rawText, parsedTrade, flags, simulationResult, email } = body;
             if(!rawText || !parsedTrade || !email){
                 return Response.json({error: "rawText, parsedTrade, and email are required"}, {status: 400});
             }
-            const prompt = await Prompts.create({ email, rawText, parsedTrade, flags, simulationSummary });
+            const prompt = await Prompts.create({ email, rawText, parsedTrade, flags, simulationResult });
             return Response.json(prompt, {status:201});
 
         }

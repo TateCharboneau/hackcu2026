@@ -80,6 +80,6 @@ export interface AnalysisDocument {
   rawText: string;
   parsedTrade: ParsedTrade;
   flags: Flag[];
-  simulationSummary?: SimulationSummary;
+  simulationResult?: SimulationResult;
   createdAt: Date;
 }
