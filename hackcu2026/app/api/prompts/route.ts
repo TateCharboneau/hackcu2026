@@ -1,11 +1,17 @@
+import { auth } from "@/auth";
 import connectDB from "@/lib/db"
 import Prompts from "@/models/Prompts"
 //takes in email and returns prompts by that user
 export async function GET(req : Request){
     try {
+
+
+        const session = await auth();
+        if(!session?.user) console.error("No auth data");
+
+        const email = session?.user?.email
         await connectDB();
-                const url = new URL(req.url);
-        const email = url.searchParams.get('email');
+      
         if (!email) {
             return Response.json({ error: "email query parameter required" }, { status: 400 });
         }

@@ -1,9 +1,10 @@
 import connectDB from "@/lib/db";
-import User from "@/models/User";
+import OAuthUser from "@/models/OAuthUser";
 
 export async function GET() {
   await connectDB();
 
-  const users = await User.find();
+  const users = await OAuthUser.find();
+  console.log(users);
   return Response.json(users);
 }
