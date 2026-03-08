@@ -24,7 +24,7 @@ if (!cached) {
 }
 
 export default async function connectDB() {
-        console.log(cached!.promise);
+        // console.log(cached!.promise);
     if (cached!.conn) return cached!.conn;
 
     if (!cached!.promise) {

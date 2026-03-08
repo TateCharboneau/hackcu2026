@@ -1,15 +1,28 @@
 "use client";
 
 import {BarChart, DonutChart, LineChart} from "@mantine/charts";
-import {Badge, Box, Flex, Grid, GridCol, Group, Paper, Skeleton, Stack, Text, Title, Tooltip} from "@mantine/core";
-import {useElementSize} from "@mantine/hooks";
+import {
+    Badge,
+    Box,
+    Divider,
+    Flex,
+    Grid,
+    GridCol,
+    Group,
+    Paper,
+    Skeleton,
+    Stack,
+    Text,
+    Title,
+    Tooltip
+} from "@mantine/core";
 import {useMemo} from "react";
-import {SimulationResult} from "@/types/trade";
+import {AnalysisDocument, SimulationResult} from "@/types/trade";
 import {useAnalysis} from "@/lib/swr";
 
 
 interface Props {
-    data?: SimulationResult,
+    data?: AnalysisDocument,
     id?: string,
     capital?: number,
 }
@@ -25,16 +38,17 @@ const fmt = (v: number) =>
 const pct = (v: number) => `${(v * 100).toFixed(1)}%`;
 
 export default function SimulationVisualization({data, id, capital}: Props) {
-    const { item: result, isLoading: resultLoading } = useAnalysis(id ?? null);
+    const {item: result, isLoading: resultLoading} = useAnalysis(id ?? null);
 
-    const resolvedData = id ? (result?.simulationResult as SimulationResult) : data;
+    const resolvedData = id ? (result as AnalysisDocument) : data;
+    const resolvedSimResult = id ? (result?.simulationResult as SimulationResult) : data;
     const resolvedCapital = capital ?? result?.parsedTrade?.capital;
-    const {summary, endingValues = [], samplePaths = []} = resolvedData ?? {};
+    const {summary, endingValues = [], samplePaths = []} = resolvedSimResult ?? {};
 
     // console.log(data);
-    console.log("id:", id);
-    console.log("result:", result);
-    console.log("resultLoading:", resultLoading);
+    // console.log("id:", id);
+    // console.log("result:", result?.flags);
+    // console.log("resultLoading:", resultLoading);
 
     const histogram = useMemo(() => {
         if (!endingValues.length) return [];
@@ -75,7 +89,7 @@ export default function SimulationVisualization({data, id, capital}: Props) {
         });
     }, [samplePaths]);
 
-    if (id && resultLoading) return <Skeleton h={400} />;
+    if (id && resultLoading) return <Skeleton h={400}/>;
     if (!summary) return null;
 
     const pathSeries = samplePaths.map((_, i) => ({
@@ -86,13 +100,13 @@ export default function SimulationVisualization({data, id, capital}: Props) {
 
     const percentileBars = [
         {
-            label: "P5",
+            label: "5th Percentile",
             description: "5th percentile — 95% of simulations ended above this value",
             value: summary.p5,
             color: "#ef4444"
         },
         {
-            label: "P25",
+            label: "25th Percentile",
             description: "25th percentile — 75% of simulations ended above this value",
             value: summary.p25,
             color: "#f97316"
@@ -110,13 +124,13 @@ export default function SimulationVisualization({data, id, capital}: Props) {
             color: "#14b8a6"
         },
         {
-            label: "P75",
+            label: "75th Percentile",
             description: "75th percentile — 25% of simulations ended above this value",
             value: summary.p75,
             color: "#06b6d4"
         },
         {
-            label: "P95",
+            label: "95th Percentile",
             description: "95th percentile — only 5% of simulations ended above this value",
             value: summary.p95,
             color: "#3b82f6"
@@ -135,6 +149,72 @@ export default function SimulationVisualization({data, id, capital}: Props) {
 
     return (
         <Stack gap="xl">
+            <Stack gap="sm">
+            <Group justify="space-between" align="flex-end">
+                <Box>
+                    <Text size="xs" c="dimmed" tt="uppercase" fw={600} style={{letterSpacing: "0.1em"}}>
+                        {resolvedData?.explanation}
+                    </Text>
+                    <Group align="baseline" gap="xs" mt={2}>
+                        <Title order={2}>Current Trade Stats</Title>
+                        {resolvedData?.parsedTrade?.ticker && (
+                            <Title order={2} fw={900}>— {resolvedData.parsedTrade.ticker}</Title>
+                        )}
+                    </Group>
+                    {resolvedData?.parsedTrade?.currentPrice && (
+                        <Text size="sm" c="dimmed" mt={4}>
+                            Current Price: {fmt(resolvedData.parsedTrade.currentPrice)}
+                        </Text>
+                    )}
+                </Box>
+                <Stack>
+                    {resolvedData?.parsedTrade?.direction && (
+                        <Badge size="md" color={resolvedData.parsedTrade.direction === "bullish" ? "teal" : "red"}>
+                            {resolvedData.parsedTrade.direction}
+                        </Badge>
+                    )}
+                    {resolvedData?.parsedTrade?.assetType && (
+                        <Badge size="md" color="blue">
+                            {resolvedData.parsedTrade.assetType} Trade
+                        </Badge>
+                    )}
+                    {/*<Badge size="md" variant="light" color="gray">*/}
+                    {/*    n = {endingValues.length.toLocaleString()} simulations*/}
+                    {/*</Badge>*/}
+                </Stack>
+            </Group>
+
+            {resolvedData?.flags && resolvedData.flags.length > 0 && (
+                <Box>
+                    <Text size="md" c="dimmed" tt="uppercase" fw={600} style={{letterSpacing: "0.1em"}} mb={4}>
+                        Flagged Phrases
+                    </Text>
+                    <Text size="sm" c="dimmed" mb="md">
+                        The following phrases were detected as potentially misleading or harmful.
+                    </Text>
+                    <Stack gap="sm">
+                        {resolvedData.flags.map((flag, i) => (
+                            <Paper key={i} p="md" withBorder
+                                   style={{borderLeft: `4px solid ${flag.severity === "high" ? "#ef4444" : flag.severity === "medium" ? "#f97316" : "#eab308"}`}}>
+                                <Group justify="space-between" mb={4}>
+                                    <Text size="sm" fw={600}>"{flag.phrase}"</Text>
+                                    <Badge
+                                        color={flag.severity === "high" ? "red" : flag.severity === "medium" ? "orange" : "yellow"}
+                                        variant="light">
+                                        {flag.severity}
+                                    </Badge>
+                                </Group>
+                                <Text size="sm" c="dimmed">{flag.reason}</Text>
+                            </Paper>
+                        ))}
+                    </Stack>
+                </Box>
+            )}
+            </Stack>
+
+            <Divider/>
+
+
             {/* Header */}
             <Group justify="space-between" align="flex-end">
                 <Box>
@@ -142,6 +222,13 @@ export default function SimulationVisualization({data, id, capital}: Props) {
                         Monte Carlo Analysis
                     </Text>
                     <Title order={2} mt={2}>Simulation Results</Title>
+                    <Text size="xs" c="dimmed" fw={600}>
+                        Assuming: {" "}
+                        {result?.parsedTrade?.assumptions.map((el, idx) => {
+                            if (idx < (result?.parsedTrade?.assumptions.length ?? 0)) return el + ", ";
+                            return el;
+                        })}
+                    </Text>
                 </Box>
                 <Stack>
                     <Badge size="md" variant="light" color="gray">

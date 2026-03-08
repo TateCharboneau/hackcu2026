@@ -96,7 +96,7 @@ export default function HomeTabs() {
     return (<>
             {loading && <LoadingOverlay/>}
             {/*@ts-expect-error This works, but says you can't do align on Card*/}
-            <Card style={{minHeight: "400px"}} align={"center"}>
+            <Card style={{minHeight: "300px"}} align={"center"}>
                 <Tabs defaultValue="url">
                     <Tabs.List>
                         <Tabs.Tab value="url">URL</Tabs.Tab>
@@ -167,7 +167,7 @@ export default function HomeTabs() {
             </Card>}
 
             {!loading && !resultLoading && result && <Card style={{minHeight: "400px", minWidth: 0}} mt={20}>
-                <SimulationVisualization data={result.simulationResult} capital={result.parsedTrade?.capital}/>
+                <SimulationVisualization data={result} id={idFromUrl ?? undefined} capital={result.parsedTrade?.capital}/>
             </Card>}
         </>
     );
