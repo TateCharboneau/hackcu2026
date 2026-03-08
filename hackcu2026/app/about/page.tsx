@@ -28,7 +28,7 @@ const contributors = [
     {
         name: "Dresden Friar",
         role: "Full Stack Developer",
-        avatar: "https://media.licdn.com/dms/image/v2/D5603AQGdilTYhSqtCg/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1725236058723?e=1774483200&v=beta&t=Lsvis4WzLEYDLuz7OSkqBxMvZM1YioGemwbXvda3rkg", // Add image URL or leave empty for initials
+        avatar: "./Dresden_Friar_Picture.jpg",
         bio: "Passionate about building secure financial tools that protect investors from fraud and market manipulation.",
         github: "Dresden6",
         email: "contributor1@example.com"
@@ -36,7 +36,7 @@ const contributors = [
     {
         name: "Matvey Bubalo",
         role: "Front End Developer",
-        avatar: "https://media.licdn.com/dms/image/v2/D4E03AQExQYgIhwP2Vw/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1725155701085?e=1774483200&v=beta&t=yN8Gv6btxwjX5Gupt60970CHsDMzwrVzB1ESrt0yw0c",
+        avatar: "./Matvey_Bubalo_Picture.jpg",
         bio: "Focused on creating a welcoming user experience and seamless integration with the backend",
         github: "MatveyBu",
         email: "contributor2@example.com"
@@ -44,7 +44,7 @@ const contributors = [
     {
         name: "Tate Charboneau",
         role: "Backend Developer",
-        avatar: "https://media.licdn.com/dms/image/v2/D5603AQHnBDlXDoyrdw/profile-displayphoto-shrink_400_400/B56ZOem6LDG8Ag-/0/1733532820439?e=1774483200&v=beta&t=dkSTIs1cRF5-wWeSbJTYnFn-HSOZlU_Nbqk9hlf65w4",
+        avatar: "./Tate_Charboneau_Picture.jpg",
         bio: "Focused on creating scalable and secure systems.",
         github: "TateCharboneau",
         email: "contributor3@example.com"
@@ -52,7 +52,7 @@ const contributors = [
     {
         name: "Gavin Wilson",
         role: "Database Engineer",
-        avatar: "https://hips.hearstapps.com/hmg-prod/images/heath_ledger_getty_images_photo_bob_riha_jr_wireimage_116948085.jpg",
+        avatar: "./Gavin_Wilson_Picture.jpg",
         bio: "Architect of robust database systems optimized for storing and querying large-scale financial datasets.",
         github: "Gawlson",
         email: "contributor4@example.com"
