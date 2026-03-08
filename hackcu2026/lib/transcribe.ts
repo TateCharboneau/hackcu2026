@@ -131,7 +131,7 @@ function runYtDlp(url: string, outputPath: string): Promise<void> {
   });
 }
 
-/* ── Mock fallback ──────────────────────────────────────── */
+/* ── Mock fallback if no API key is set ──────────────────────────────────────── */
 
 const MOCK_TRANSCRIPT =
   "Guys, put all your money into Tesla calls, guaranteed win, can't lose. " +
