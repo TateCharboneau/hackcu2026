@@ -20,9 +20,11 @@ export default function Home() {
                     {session?.user && <Title order={3}>Welcome Back, {session.user.name}</Title>}
                     <Card>
                         <Text size={"lg"}>
-                            In a world of of rugpulls and pump-and-dumps, TradeTruth stands for transparency. Our tool
+                            The modern financial world can be full of noise, hype and speculation. TradeTruth
                             allows you to analyze various forms of financial advice to scan for potential red flags and
-                            allow you to avoid malicious actors.
+                            allow you to avoid malicious actors. Paste in a tip, a tweet or a trade strategy and 
+                            we'll run a simulation to show you the realistic range of outcomes. 
+                            Make informed decisions, not faith-based ones.
                         </Text>
                     </Card>
 
