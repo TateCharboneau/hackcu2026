@@ -17,7 +17,7 @@ import {useState} from "react";
 import styles from "./header.module.css";
 import Image from "next/image";
 import {bitcount, orbitron} from "@/app/fonts";
-import {IconDashboard, IconLogout, IconMoon, IconSun} from "@tabler/icons-react";
+import {IconDashboard, IconLogout, IconMoon, IconSun, IconUser} from "@tabler/icons-react";
 import LoginButton from "@/app/_components/auth/loginButton/LoginButton";
 import {signOut, useSession} from "next-auth/react";
 import {notifications} from "@mantine/notifications";
@@ -115,7 +115,9 @@ export default function CustomAppShell(props: Props) {
 
                                 <MenuDropdown>
                                     <Menu.Label>Account</Menu.Label>
-
+                                    <MenuItem leftSection={<IconUser size={14}/>} component={Link} href="/profile">
+                                        Profile
+                                    </MenuItem>
                                     <MenuDivider/>
                                     <MenuItem leftSection={<IconLogout size={14}/>} onClick={async () => {
                                         setLoadingOverlayVisible(true);
