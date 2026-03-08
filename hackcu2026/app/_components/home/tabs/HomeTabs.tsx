@@ -13,76 +13,83 @@ export default function HomeTabs() {
     const [result, setResult] = useState<any>(null);
     const [error, setError] = useState<string | null>(null);
 
-    //handlers for each input type; TODO: call actual API 
-    const handleUrlSubmit = async () =>{
-        console.log('Analyzing URL:', url);
-        if (!url.trim()) return; //prevent empty submissions
+    // Shared helper: run simulate after a successful analyze response
+    const runSimulate = async (parsedTrade: any) => {
+        const simResponse = await fetch('/api/simulate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ parsedTrade }),
+        });
+        if (!simResponse.ok) throw new Error('Simulation failed');
+        return simResponse.json();
+    };
 
+    const handleUrlSubmit = async () => {
+        if (!url.trim()) return;
         setLoading(true);
         setError(null);
-        try{
-            //POST JSON with url field to analyze endpoint
-            const response = await fetch('/api/analyze',{
+        try {
+            const analyzeRes = await fetch('/api/analyze', {
                 method: 'POST',
-                headers: {'Content-Type':'application/json'},
-                body: JSON.stringify({url})
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url }),
             });
+            if (!analyzeRes.ok) throw new Error('Analysis failed');
+            const analyzeData = await analyzeRes.json();
 
-            if(!response.ok) throw new Error('Analysis failed');
-
-            //parse and store the analysis result
-            const data = await response.json();
-            setResult(data);
-        } catch (err){
-            setError(err instanceof Error ? err.message : 'Oopsy Daisy');
+            const simData = await runSimulate(analyzeData.parsedTrade);
+            setResult({ ...analyzeData, simulation: simData.simulation });
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Unknown error');
         } finally {
             setLoading(false);
         }
     };
 
-    const handleTextSubmit = async () =>{
-        console.log("Analyzing Text:", text);
-        if(!text.trim()) return; //prevent empty submissions
-
+    const handleTextSubmit = async () => {
+        if (!text.trim()) return;
         setLoading(true);
         setError(null);
-        try{
-            const response = await fetch('/api/analyze',{
+        try {
+            const analyzeRes = await fetch('/api/analyze', {
                 method: 'POST',
-                headers: {'Content-Type':'application/json'},
-                body: JSON.stringify({text})
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text }),
             });
+            if (!analyzeRes.ok) throw new Error('Analysis failed');
+            const analyzeData = await analyzeRes.json();
 
-            if(!response.ok) throw new Error('Analysis failed');
-            
-            const data = await response.json();
-        }catch(err){
-            setError(err instanceof Error ? err.message : 'Unknown Error')
-        }finally {
+            const simData = await runSimulate(analyzeData.parsedTrade);
+            setResult({ ...analyzeData, simulation: simData.simulation });
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Unknown error');
+        } finally {
             setLoading(false);
         }
     };
 
-    const handleFileSubmit = async () =>{
-        console.log("Analyzing File:", file);
-        if(!text.trim()) return;
-
+    const handleFileSubmit = async () => {
+        if (!file) return;
         setLoading(true);
         setError(null);
-        try{
-            const response = await fetch('api/analyze',{
+        try {
+            // File uploads must use multipart/form-data — do NOT set Content-Type manually,
+            // the browser sets it automatically with the correct boundary when using FormData
+            const formData = new FormData();
+            formData.append('audio', file);
+
+            const analyzeRes = await fetch('/api/analyze', {
                 method: 'POST',
-                headers: {'Content-Type':'application/json'},
-                body: JSON.stringify({text})
+                body: formData,
             });
+            if (!analyzeRes.ok) throw new Error('Analysis failed');
+            const analyzeData = await analyzeRes.json();
 
-            if (!response.ok) throw new Error('Analysis failed');
-
-            const data = await response.json();
-            setResult(data);
-        }catch(err){
-            setError(err instanceof Error ? err.message : 'Unknown Error');
-        }finally{
+            const simData = await runSimulate(analyzeData.parsedTrade);
+            setResult({ ...analyzeData, simulation: simData.simulation });
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Unknown error');
+        } finally {
             setLoading(false);
         }
     };
