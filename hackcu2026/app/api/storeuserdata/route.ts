@@ -18,11 +18,11 @@ export async function GET(){
     export async function POST(req:Request){
         try{
             const body = await req.json();
-            const{email, id} = body;
-            if(!email || !id ){
-                return Response.json({error: "name and age required"});
+            const{email} = body;
+            if(!email ){
+                return Response.json({error: "email required"});
             }
-            const user = await OAuthUser.create({email, id});
+            const user = await OAuthUser.create({email});
             return Response.json(user, {status:200});
 
         }
