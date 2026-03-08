@@ -44,7 +44,7 @@ export default function SimulationPage() {
                                 <GridCol span={{base: 12, sm: 8, lg: 9}}>
                                     <Stack>
                                         <Text fw={500}>{el.parsedTrade?.ticker ?? "Unknown ticker"}</Text>
-                                        <Spoiler maxHeight={50} showLabel="Show more" hideLabel="Hide">
+                                        <Spoiler maxHeight={40} showLabel="Show more" hideLabel="Hide" transitionDuration={99999}>
                                             <Text size="sm" c="dimmed">
                                                 {el.rawText}
                                             </Text>
